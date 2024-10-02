@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDU Faucet</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N7LV3GKGQ1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N7LV3GKGQ1');
+</script>
+</head>
+<body>
+    <div class="container">
+        <h1>EDU Faucet</h1>
+        <p>Current Faucet Balance: <span id="balance">Loading...</span> EDU</p>
+
+        <form id="faucet-form">
+            <input type="text" id="wallet" placeholder="Enter your wallet address" required>
+            <button type="submit" id="faucet-button">Get 0.001 EDU</button>
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAAwlECtgdnzWQCWs"></div>
+        </form>
+
+        <p id="response"></p>
+        <p id="txn-hash"></p>
+        <div class="donate">
+            <h2>Donate to Faucet</h2>
+            <p>You can donate to this faucet to keep it running. Send donations to:</p>
+            <p><strong id="donate-wallet">Loading...</strong></p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Powered by <a href="https://ekas.link/">EKA</a></p>
+    </div>
+
+    <script>
+        let clickCount = 0;
+
+        async function fetchBalance() {
+            const response = await fetch('/balance');
+            const data = await response.json();
+            if (data.eduBalance) {
+                document.getElementById('balance').textContent = parseFloat(data.eduBalance).toFixed(3);
+            } else {
+                document.getElementById('balance').textContent = 'Error';
+            }
+        }
+
+        async function fetchWalletAddress() {
+            const response = await fetch('/wallet-address');
+            const data = await response.json();
+            document.getElementById('donate-wallet').textContent = data.walletAddress || 'Error';
+        }
+
+        document.getElementById('faucet-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            clickCount++;
+
+            if (clickCount === 1) {
+                window.open('https://x.com/intent/user?screen_name=AirDropEKA', '_blank');
+            } else {
+                const walletAddress = document.getElementById('wallet').value;
+                const turnstileToken = document.querySelector('[name="cf-turnstile-response"]').value;
+
+                try {
+                    const response = await fetch('/faucet', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ walletAddress, turnstileToken }),
+                    });
+                    const data = await response.json();
+                    document.getElementById('response').textContent = data.message || data.error;
+                    if (data.txHash) {
+                        document.getElementById('txn-hash').innerHTML = `<a href="https://opencampus-codex.blockscout.com/tx/${data.txHash}" target="_blank">Transaction Hash</a>`;
+                    } else {
+                        document.getElementById('txn-hash').textContent = '';
+                    }
+                } catch (error) {
+                    document.getElementById('response').textContent = 'Error sending EDU.';
+                    document.getElementById('txn-hash').textContent = '';
+                }
+                clickCount = 0;
+            }
+        });
+
+        fetchBalance();
+        fetchWalletAddress();
+    </script>
+</body>
+</html>
