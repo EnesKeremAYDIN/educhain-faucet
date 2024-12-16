@@ -80,7 +80,7 @@ app.post('/faucet', async (req, res) => {
 
     const isTurnstileValid = await verifyTurnstile(turnstileToken);
     if (!isTurnstileValid) {
-        return res.status(400).json({ error: 'Turnstile verification failed' });
+        return res.status(400).json({ error: 'Captcha Error' });
     }
 
     const claimStatus = checkLastClaim(walletAddress);
@@ -107,7 +107,7 @@ app.post('/faucet', async (req, res) => {
         writeDatabase(db);
 
         res.json({
-            message: `Sent ${process.env.FAUCET_AMOUNT} EDU to ${walletAddress}`,
+            message: `Sent successful ${process.env.FAUCET_AMOUNT} EDU to ${walletAddress}`,
             txHash: tx.hash
         });
     } catch (error) {
