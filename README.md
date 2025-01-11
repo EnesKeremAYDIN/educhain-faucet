@@ -24,7 +24,7 @@ EduChain Faucet is a web-based application for distributing testnet tokens to us
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/educhain-faucet.git
+   git clone https://github.com/EnesKeremAYDIN/educhain-faucet.git
    cd educhain-faucet
    ```
 
